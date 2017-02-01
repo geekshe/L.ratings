@@ -23,21 +23,32 @@ app.jinja_env.undefined = StrictUndefined
 @app.route('/')
 def index():
     """Homepage."""
-    a = jsonify([1,3])
+    a = jsonify([1, 3])
     return render_template("homepage.html")
+
 
 @app.route('/users')
 def user_list():
-    """Show list of users."""
+    """Show list of all users."""
 
     users = User.query.all()
     return render_template("user_list.html", users=users)
+
+
+@app.route('/movies')
+def movie_list():
+    """Show list of all movies."""
+
+    movies = Movie.query.order_by(Movie.title).all()
+    return render_template("movie_list.html", movies=movies)
+
 
 @app.route('/register', methods=["GET"])
 def display_registration():
     """Display register form"""
 
     return render_template("register_form.html")
+
 
 @app.route('/register', methods=["POST"])
 def process_registration():
@@ -64,11 +75,13 @@ def process_registration():
 
     return redirect("/login")
 
+
 @app.route('/login', methods=["GET"])
 def display_login():
     """Display login form"""
 
     return render_template('login_form.html')
+
 
 @app.route('/login', methods=["POST"])
 def log_in():

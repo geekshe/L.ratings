@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    <h2>Users</h2>
+    <h2>All Movies</h2>
     <ul>
-      {% for user in users %}
+      {% for movie in movies %}
           <li>
-              <a href="/users/{{ user.user_id }}">
-                {{ user.email }} ({{ user.user_id }})
+              <a href="/movies/{{ movie.title }}">
+                {{ movie.title }} 
+                  {% if movie.released_at != None %}
+                    ({{ movie.released_at.year }})
+                  {% endif %}
               </a>
           </li>
       {% endfor %}

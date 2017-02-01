@@ -2,10 +2,20 @@
 <html>
 <head>
   <title>Ratings</title>
+  <LINK REL=StyleSheet HREF="/static/css/styles.css" TYPE="text/css">
 </head>
 
 <body>
-  Ratings
+  <p>
+  <div class="leftnav"><a href="/">Home</a></div>
+
+    {% if 'username' in session %}
+      <div class="rightnav"><a href="/logout">Log out</a></div>
+    {% else%}
+      <div class="rightnav"><a href="/login">Login</a></div>
+      <div class="rightnav"><a href="/register">Register</a></div>
+    {% endif %}
+</p>
   <hr>
 
   {% with messages = get_flashed_messages() %}

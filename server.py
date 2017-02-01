@@ -85,7 +85,7 @@ def log_in():
 
     # If user in database and if password matches, login
     try:
-        login_user = user.one():
+        login_user = user.one()
     # Throws an exception if user.one does not return an item from the database
     except sqlalchemy.orm.exc.NoResultFound:
         flash("No User with username %s" % (username))

@@ -59,7 +59,14 @@ def movie_details(movie_id):
 # Using movie ID instead of title in the URL to avoid issues with URL
 # coding and non-unique titles
     movie = Movie.query.filter(Movie.movie_id == movie_id).one()
-    return render_template("movie_details.html", movie=movie)
+    user_id = User.query.filter(User.email == session['username']).one().user_id
+    # Check to see if a user has rated a movie. Return boolean.
+    rated_status = Rating.query.filter(Rating.user_id == user_id, Rating.movie_id == movie_id).all()
+    is_rated = len(rated_status) > 0
+
+    print is_rated
+
+    return render_template("movie_details.html", movie=movie, is_rated=is_rated)
 
 
 @app.route('/movies/<movie_id>', methods=["POST"])
@@ -69,11 +76,18 @@ def rate_movie(movie_id):
     user_score = int(request.form.get('rating_select'))
     user_id = User.query.filter(User.email == session['username']).one().user_id
     user_rating = Rating(movie_id=movie_id, user_id=user_id, score=user_score)
-    db.session.add(user_rating)
+    # Get rate/update from form
+    # If add_rating
+    if request.form.get('rating_status') == 'add_rating':
+        db.session.add(user_rating)
+    elif request.form.get('rating_status') == 'update_rating':
+        stored_rating = Rating.query.filter(Rating.movie_id == movie_id, Rating.user_id == user_id).one()
+        stored_rating.score = user_score
+
     db.session.commit()
 
     movie = Movie.query.filter(Movie.movie_id == movie_id).one()
-    return render_template("movie_details.html", movie=movie)
+    return render_template("movie_details.html", movie=movie, is_rated=True)
 
 
 @app.route('/register', methods=["GET"])

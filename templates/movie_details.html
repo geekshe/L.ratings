@@ -23,7 +23,13 @@
         <option value="2">2</option>
         <option value="1">1</option>
       </select>
-    <input type="submit">
+      {% if is_rated %}
+        <input type="hidden" name="rating_status" value="update_rating">
+        <input type="submit" value="Update">
+      {% else %}
+        <input type="hidden" name="rating_status" value="add_rating">
+        <input type="submit" value="Rate">
+      {% endif %}
   </form>
 {% endif %}
 

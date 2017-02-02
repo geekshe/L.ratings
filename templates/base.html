@@ -1,34 +1,41 @@
 <!doctype html>
 <html>
 <head>
-  <title>{% block title %}{% endblock %} - Great Movies for you!</title>
-  <LINK REL=StyleSheet HREF="/static/css/styles.css" TYPE="text/css">
+<title>{% block title %}Welcome{% endblock %} - Your CineBuddy!</title>
+<LINK REL=StyleSheet HREF="/static/css/styles.css" TYPE="text/css">
 </head>
 
 <body>
-  <p>
+<div class="navbar">
   <div class="leftnav"><a href="/">Home</a></div>
+  {% if 'username' in session %}
+  <div class="rightnav"><a href="/logout">Log out</a></div>
+  {% else%}
+  <div class="rightnav">
+  <a href="/login">Login</a>
+  <a href="/register">Register</a>
+  </div>
+  {% endif %} 
+</div>
 
-    {% if 'username' in session %}
-      <div class="rightnav"><a href="/logout">Log out</a></div>
-    {% else%}
-      <div class="rightnav"><a href="/login">Login</a></div>
-      <div class="rightnav"><a href="/register">Register</a></div>
-    {% endif %}
-</p>
-  <hr>
 
-  {% with messages = get_flashed_messages() %}
+
+{% with messages = get_flashed_messages() %}
   {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-  {% endwith %}
-
-  {% block content %} put your content here {% endblock %}
-
+<ul class=flashes>
+  {% for message in messages %}
+  <li>{{ message }}</li>
+  {% endfor %}
+</ul>
+	{% endif %}
+{% endwith %}
+  
+<div class="content">
+{% block content %}
+   <!-- put your content here -->
+{% endblock %}
+</div>
+<hr>
+<p>Copyright &copy; 2017 CineBuddies. All rights reserved.</p>
 </body>
 </html>

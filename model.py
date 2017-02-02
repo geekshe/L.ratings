@@ -12,6 +12,7 @@ db = SQLAlchemy()
 ##############################################################################
 # Model definitions
 
+
 class User(db.Model):
     """User of ratings website."""
 
@@ -29,6 +30,7 @@ class User(db.Model):
         return "<User user_id=%s email=%s>" % (self.user_id,
                                                self.email)
 
+
 class Movie(db.Model):
     """Movie to be rated."""
 
@@ -43,7 +45,8 @@ class Movie(db.Model):
         """Provide helpful representation when printed."""
 
         return "<Movie movie_id=%d title=%s>" % (self.movie_id,
-                                               self.title)
+                                                 self.title)
+
 
 class Rating(db.Model):
     """Contains movie ratings."""

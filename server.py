@@ -35,12 +35,45 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
+@app.route('/users/<user_id>')
+def user_details(user_id):
+    """Show user details."""
+
+#  Nice to have. Return data sorted by movie title.
+    user = User.query.filter(User.user_id == user_id).one()
+    return render_template("user_details.html", user=user)
+
+
 @app.route('/movies')
 def movie_list():
     """Show list of all movies."""
 
     movies = Movie.query.order_by(Movie.title).all()
     return render_template("movie_list.html", movies=movies)
+
+
+@app.route('/movies/<movie_id>')
+def movie_details(movie_id):
+    """Show movie details."""
+
+# Using movie ID instead of title in the URL to avoid issues with URL
+# coding and non-unique titles
+    movie = Movie.query.filter(Movie.movie_id == movie_id).one()
+    return render_template("movie_details.html", movie=movie)
+
+
+@app.route('/movies/<movie_id>', methods=["POST"])
+def rate_movie(movie_id):
+    """Rate a movie."""
+
+    user_score = int(request.form.get('rating_select'))
+    user_id = User.query.filter(User.email == session['username']).one().user_id
+    user_rating = Rating(movie_id=movie_id, user_id=user_id, score=user_score)
+    db.session.add(user_rating)
+    db.session.commit()
+
+    movie = Movie.query.filter(Movie.movie_id == movie_id).one()
+    return render_template("movie_details.html", movie=movie)
 
 
 @app.route('/register', methods=["GET"])

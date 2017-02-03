@@ -8,6 +8,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from model import User, Rating, Movie, connect_to_db, db
 import sqlalchemy
 
+from decimal import *
 
 app = Flask(__name__)
 
@@ -56,38 +57,74 @@ def movie_list():
 def movie_details(movie_id):
     """Show movie details."""
 
-# Using movie ID instead of title in the URL to avoid issues with URL
-# coding and non-unique titles
+    # getcontext().prec = 1
+    # Using movie ID instead of title in the URL to avoid issues with URL
+    # coding and non-unique titles
     movie = Movie.query.filter(Movie.movie_id == movie_id).one()
-    user_id = User.query.filter(User.email == session['username']).one().user_id
-    # Check to see if a user has rated a movie. Return boolean.
-    rated_status = Rating.query.filter(Rating.user_id == user_id, Rating.movie_id == movie_id).all()
-    is_rated = len(rated_status) > 0
 
-    print is_rated
+    # deafult values of is_rated when user not logged in
+    is_rated = None
+    user_rating = None
+    prediction = None
 
-    return render_template("movie_details.html", movie=movie, is_rated=is_rated)
+    if "username" in session:
+        user = User.query.filter(User.email == session['username']).one()
+        user_id = user.user_id
+
+        # Check to see if a user has rated the movie. Return boolean.
+        rated_status = Rating.query.filter(Rating.user_id == user_id,
+                                           Rating.movie_id == movie_id).all()
+        is_rated = len(rated_status) > 0
+
+        # If user hasn't rated the movie, make a prediction
+        if not is_rated:
+            prediction = round(user.predict_rating(movie), 1)
+
+    # Get average rating of movie
+    rating_scores = [r.score for r in movie.ratings]
+    avg_rating = round((sum(rating_scores)) / len(rating_scores), 1)
+
+    return render_template("movie_details.html",
+                           movie=movie,
+                           is_rated=is_rated,
+                           user_rating=user_rating,
+                           average=avg_rating,
+                           prediction=prediction)
 
 
 @app.route('/movies/<movie_id>', methods=["POST"])
 def rate_movie(movie_id):
     """Rate a movie."""
 
+    # Grab user score from form
     user_score = int(request.form.get('rating_select'))
+    # Grab user_id via session
     user_id = User.query.filter(User.email == session['username']).one().user_id
+    # Grab user's list of ratings for the movie
     user_rating = Rating(movie_id=movie_id, user_id=user_id, score=user_score)
-    # Get rate/update from form
-    # If add_rating
+
+    # Check to see if a new rating passed in, or an update
     if request.form.get('rating_status') == 'add_rating':
         db.session.add(user_rating)
     elif request.form.get('rating_status') == 'update_rating':
-        stored_rating = Rating.query.filter(Rating.movie_id == movie_id, Rating.user_id == user_id).one()
+        stored_rating = Rating.query.filter(Rating.movie_id == movie_id,
+                                            Rating.user_id == user_id).one()
         stored_rating.score = user_score
 
+    # Commit changes to ratings table
     db.session.commit()
 
+    avg_rating = float(request.form.get('average'))
+
+    # Query for updated list of movie ratings
     movie = Movie.query.filter(Movie.movie_id == movie_id).one()
-    return render_template("movie_details.html", movie=movie, is_rated=True)
+
+    return render_template("movie_details.html",
+                           movie=movie,
+                           is_rated=True,
+                           user_rating=user_rating,
+                           average=avg_rating,
+                           prediction=None)
 
 
 @app.route('/register', methods=["GET"])

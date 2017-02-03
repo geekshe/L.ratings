@@ -41,8 +41,10 @@ def user_details(user_id):
     """Show user details."""
 
 #  Nice to have. Return data sorted by movie title.
-    user = User.query.filter(User.user_id == user_id).one()
-    return render_template("user_details.html", user=user)
+
+    # Work in progress, to avoid all the queries
+    user_ratings = db.session.query(User).join(Movie.title, Movie.movie_id).join(Rating.score).all()
+    return render_template("user_details.html", user=user_ratings)
 
 
 @app.route('/movies')
@@ -67,9 +69,8 @@ def movie_details(movie_id):
     user_rating = None
     prediction = None
 
-    if "username" in session:
-        user = User.query.filter(User.email == session['username']).one()
-        user_id = user.user_id
+    if "user_id" in session:
+        user_id = session["user_id"]
 
         # Check to see if a user has rated the movie. Return boolean.
         rated_status = Rating.query.filter(Rating.user_id == user_id,
@@ -99,7 +100,7 @@ def rate_movie(movie_id):
     # Grab user score from form
     user_score = int(request.form.get('rating_select'))
     # Grab user_id via session
-    user_id = User.query.filter(User.email == session['username']).one().user_id
+    user_id = session["user_id"]
     # Grab user's list of ratings for the movie
     user_rating = Rating(movie_id=movie_id, user_id=user_id, score=user_score)
 
@@ -189,8 +190,9 @@ def log_in():
         return redirect("/login")
 
     if login_user.password == password:
-        # Add user to session cookie
-        session['username'] = username
+        user_id = User.query.filter_by(email=username).one().user_id
+        # Add user_id to session cookie
+        session['user_id'] = user_id
         flash("Logged in")
         return redirect("/")
     else:
@@ -203,7 +205,7 @@ def log_out():
     """Log user out"""
 
     # Remove user from session
-    del session['username']
+    del session['user_id']
 
     flash("Logged out")
     return redirect("/")
